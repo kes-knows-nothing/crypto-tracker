@@ -1,10 +1,9 @@
 import { createGlobalStyle } from "styled-components";
 import Router from "./Router";
+import { Outlet } from "react-router-dom";
 
 const GlobalStyle = createGlobalStyle`
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300&display=swap');
-  body {
-    html, body, div, span, applet, object, iframe,
+html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
 del, dfn, em, img, ins, kbd, q, s, samp,
@@ -51,23 +50,23 @@ table {
   box-sizing: border-box;
 }
 body {
- font-family: 'Roboto Slab', serif;
+ font-family: 'Roboto', sans-serif;
  background-color: ${(props) => props.theme.bgColor};
  color: ${(props) => props.theme.textColor};
 }
 a {
   text-decoration: none;
 }
-  }
+  
 `;
 
-function App() {
+function Root() {
   return (
     <>
       <GlobalStyle />
-      <Router />
+      <Outlet />
     </>
   );
 }
 
-export default App;
+export default Root;
