@@ -5,6 +5,9 @@ import { theme } from "./theme.ts";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { RouterProvider } from "react-router-dom";
 import router from "./Router.tsx";
+import { QueryClient, QueryClientProvider } from "react-query";
+
+const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -22,9 +25,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         />
         <title>Crypto</title>
       </Helmet>
-      <ThemeProvider theme={theme}>
-        <RouterProvider router={router} />
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider theme={theme}>
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </QueryClientProvider>
     </HelmetProvider>
   </React.StrictMode>
 );

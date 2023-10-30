@@ -1,5 +1,4 @@
 import { createGlobalStyle } from "styled-components";
-import Router from "./Router";
 import { Outlet } from "react-router-dom";
 
 const GlobalStyle = createGlobalStyle`
@@ -53,6 +52,8 @@ body {
  font-family: 'Roboto', sans-serif;
  background-color: ${(props) => props.theme.bgColor};
  color: ${(props) => props.theme.textColor};
+ font-weight: 300;
+ line-height: 1.2;
 }
 a {
   text-decoration: none;
