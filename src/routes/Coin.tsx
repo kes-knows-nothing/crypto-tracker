@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation, useParams } from "react-router";
+import { useParams } from "react-router";
 import { Link, Outlet } from "react-router-dom";
 import styled from "styled-components";
 import axios from "axios";
