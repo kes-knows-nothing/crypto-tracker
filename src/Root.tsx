@@ -1,5 +1,6 @@
-import { createGlobalStyle } from "styled-components";
-import { Outlet } from "react-router-dom";
+import { createGlobalStyle } from 'styled-components';
+import { ReactQueryDevtools } from 'react-query/devtools';
+import { Outlet } from 'react-router-dom';
 
 const GlobalStyle = createGlobalStyle`
 html, body, div, span, applet, object, iframe,
@@ -50,8 +51,8 @@ table {
 }
 body {
  font-family: 'Roboto', sans-serif;
- background-color: ${(props) => props.theme.bgColor};
- color: ${(props) => props.theme.textColor};
+ background-color: ${props => props.theme.bgColor};
+ color: ${props => props.theme.textColor};
  font-weight: 300;
  line-height: 1.2;
 }
@@ -67,6 +68,7 @@ function Root() {
     <>
       <GlobalStyle />
       <Outlet />
+      <ReactQueryDevtools initialIsOpen={true} />
     </>
   );
 }

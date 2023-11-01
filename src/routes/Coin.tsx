@@ -1,205 +1,186 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router";
-import { Link, Outlet } from "react-router-dom";
-import styled from "styled-components";
-import axios from "axios";
+import { useQuery } from 'react-query';
+import { useParams, useNavigate } from 'react-router';
+import styled from 'styled-components';
+import { axiosCoinData, axiosCoinPriceData } from '../api';
+import Navbar from '../components/Navbar';
 
-const Img = styled.img`
-  width: 35px;
-  height: 35px;
-  margin-right: 10px;
-`;
-
-const Title = styled.h1`
-  font-size: 48px;
-  color: ${(props) => props.theme.accentColor};
-`;
-
-const Loader = styled.span`
-  text-align: center;
-  display: block;
-`;
-
-const Container = styled.div`
-  padding: 0px 20px;
-  max-width: 480px;
-  margin: 0 auto;
-`;
-
-const Header = styled.header`
-  height: 15vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-const Overview = styled.div`
-  display: flex;
-  justify-content: space-between;
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 10px 20px;
-  border-radius: 10px;
-`;
-const OverviewItem = styled.div`
+const ContentContainer = styled.div`
+  margin-left: 20vw;
+  height: 100%;
+  background-color: #1a0f0f;
   display: flex;
   flex-direction: column;
   align-items: center;
-  span:first-child {
-    font-size: 10px;
-    font-weight: 400;
-    text-transform: uppercase;
-    margin-bottom: 5px;
-  }
-`;
-const Description = styled.p`
-  margin: 20px 0px;
+  justify-content: center;
+  padding: 20px;
+  gap: 10px;
 `;
 
-export interface InfoData {
+const HomeBtnContainer = styled.div`
+  cursor: pointer;
+  width: 100%;
+`;
+
+const MetaInfoHeadline = styled.div`
+  width: 100%;
+  padding: 20px 40px;
+`;
+
+const SimpleInfoBox = styled.div`
+  width: 100%;
+  display: flex;
+  gap: 12px;
+  span {
+    background-color: rgb(33, 40, 65);
+    color: rgb(129, 145, 197);
+    border-radius: 4px;
+    padding: 8px 12px;
+  }
+`;
+const MainDataBox = styled.div`
+  width: 100%;
+  height: 12vh;
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  font-size: 36px;
+  span {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+`;
+
+export interface CoinInfo {
   id: string;
-  name: string;
   symbol: string;
-  rank: number;
-  is_new: boolean;
-  is_active: boolean;
-  type: string;
-  logo: string;
-  tags: Tag[];
-  team: Team[];
-  description: string;
-  message: string;
-  open_source: boolean;
-  started_at: Date;
-  development_status: string;
-  hardware_wallet: boolean;
-  proof_type: string;
-  org_structure: string;
-  hash_algorithm: string;
+  name: string;
+  asset_platform_id: null;
+  platforms: Platforms;
+  detail_platforms: DetailPlatforms;
+  block_time_in_minutes: number;
+  hashing_algorithm: string;
+  categories: string[];
+  preview_listing: boolean;
+  public_notice: null;
+  additional_notices: any[];
+  description: Description;
   links: Links;
-  links_extended: LinksExtended[];
-  whitepaper: Whitepaper;
-  first_data_at: Date;
-  last_data_at: Date;
+  image: Image;
+  country_origin: string;
+  genesis_date: Date;
+  sentiment_votes_up_percentage: number;
+  sentiment_votes_down_percentage: number;
+  watchlist_portfolio_users: number;
+  market_cap_rank: number;
+  coingecko_rank: number;
+  coingecko_score: number;
+  developer_score: number;
+  community_score: number;
+  liquidity_score: number;
+  public_interest_score: number;
+  public_interest_stats: PublicInterestStats;
+  status_updates: any[];
+  last_updated: Date;
+}
+
+export interface Description {
+  en: string;
+}
+
+export interface DetailPlatforms {
+  '': Class;
+}
+
+export interface Class {
+  decimal_place: null;
+  contract_address: string;
+}
+
+export interface Image {
+  thumb: string;
+  small: string;
+  large: string;
 }
 
 export interface Links {
-  explorer: string[];
-  facebook: string[];
-  reddit: string[];
-  source_code: string[];
-  website: string[];
-  youtube: string[];
+  homepage: string[];
+  blockchain_site: string[];
+  official_forum_url: string[];
+  chat_url: string[];
+  announcement_url: string[];
+  twitter_screen_name: string;
+  facebook_username: string;
+  bitcointalk_thread_identifier: null;
+  telegram_channel_identifier: string;
+  subreddit_url: string;
+  repos_url: ReposURL;
 }
 
-export interface LinksExtended {
-  url: string;
-  type: string;
-  stats?: Stats;
+export interface ReposURL {
+  github: string[];
+  bitbucket: any[];
 }
 
-export interface Stats {
-  subscribers?: number;
-  contributors?: number;
-  stars?: number;
-  followers?: number;
+export interface Platforms {
+  '': string;
 }
 
-export interface Tag {
-  id: string;
-  name: string;
-  coin_counter: number;
-  ico_counter: number;
+export interface PublicInterestStats {
+  alexa_rank: number;
+  bing_matches: null;
 }
-
-export interface Team {
-  id: string;
-  name: string;
-  position: string;
-}
-
-export interface Whitepaper {
-  link: string;
-  thumbnail: string;
-}
-
-export interface PriceData {
-  time_open: number;
-  time_close: number;
-  open: string;
-  high: string;
-  low: string;
-  close: string;
-  volume: string;
-  market_cap: number;
+export interface CoinPriceInfo {
+  1: number;
+  2: number;
+  3: number;
+  4: number;
 }
 
 function Coin() {
-  const [loading, setLoading] = useState(true);
   const { coinId } = useParams();
-  const [info, setInfo] = useState<InfoData>();
-  const [priceInfo, setPriceInfo] = useState<PriceData[]>();
-  const openTimeUnix = 1698624000;
-const date = new Date(openTimeUnix * 1000);
+  const navigate = useNavigate();
+  const { isLoading: coinInfoLoading, data: coinInfo } = useQuery<CoinInfo>(
+    ['coinData', coinId],
+    () => axiosCoinData(coinId as string),
+  );
+  const { isLoading: coinPriceLoading, data: coinPrice } = useQuery<CoinInfo>(
+    ['coinPriceData', coinId],
+    () => axiosCoinPriceData(coinId as string),
+  );
+  console.log(coinPrice);
 
+  // const openTimeUnix = 1698624000;
+  // const date = new Date(openTimeUnix * 1000);
 
-  useEffect(() => {
-    (async () => {
-      const infoData = await axios(
-        `https://api.coinpaprika.com/v1/coins/${coinId}`
-      );
-      const priceData = await axios(
-        `https://ohlcv-api.nomadcoders.workers.dev?coinId=${coinId}`
-      );
-      setInfo(infoData.data);
-      setPriceInfo(priceData.data);
-      console.log(infoData.data);
-      console.log(priceData.data);
-      setLoading(false);
-    })();
-  }, [coinId]);
+  const navigateHome = () => {
+    navigate('/');
+  };
 
   return (
-    <Container>
-      <Header>
-        <Img src={info?.logo} alt="logo" />
-        <Title>{info?.name}</Title>
-      </Header>
-      {loading ? (
-        <Loader>Loading...</Loader>
-      ) : (
-        <>
-          <Overview>
-            <OverviewItem>
-              <span>Rank</span>
-              <span>{info?.rank}</span>
-            </OverviewItem>
-            <OverviewItem>
-              <span>Symbol</span>
-              <span>{info?.symbol}</span>
-            </OverviewItem>
-            <OverviewItem>
-              <span>Open Source</span>
-              <span>{info?.open_source ? "Yes" : "No"}</span>
-            </OverviewItem>
-          </Overview>
-          <Description>{info?.description}</Description>
-          <Overview>
-            <OverviewItem>
-              <span>hash algorithm</span>
-              <span>{info?.hash_algorithm}</span>
-            </OverviewItem>
-            <OverviewItem>
-              <span>hardware wallet</span>
-              <span>{info?.hardware_wallet ? "Yes" : "No"}</span>
-            </OverviewItem>
-          </Overview>
-
-          <Link to="price">Price</Link>
-          <Link to="chart">Chart</Link>
-          <Outlet />
-        </>
-      )}
-    </Container>
+    <>
+      <Navbar>{coinId}</Navbar>
+      <ContentContainer>
+        <HomeBtnContainer onClick={navigateHome}></HomeBtnContainer>
+        {coinInfoLoading ? (
+          <span>Hold on!</span>
+        ) : (
+          <MetaInfoHeadline>
+            <SimpleInfoBox>
+              <span>Market Cap Rank: #{coinInfo?.market_cap_rank}</span>
+              <span>{coinInfo?.symbol.toUpperCase()}</span>
+            </SimpleInfoBox>
+            <MainDataBox>
+              <span>
+                <img src={coinInfo?.image.small} alt="logo" />
+                {coinInfo?.name}
+              </span>
+              <span>$ {coinPrice?.[0][4]}</span>
+            </MainDataBox>
+          </MetaInfoHeadline>
+        )}
+      </ContentContainer>
+    </>
   );
 }
 export default Coin;

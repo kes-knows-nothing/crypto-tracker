@@ -1,39 +1,13 @@
 import styled from "styled-components";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import { useQuery } from "react-query";
 import { axiosCoins } from "../api";
-
-const Container = styled.div`
-  width: 100%;
-  height: 100vh;
-  display: flex;
-`;
-
-const Header = styled.header`
-  height: 15vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-const Title = styled.h1`
-  font-size: 32px;
-  color: ${(props) => props.theme.accentColor};
-`;
-
-
-const Nav = styled.nav`
-  width: 20%;
-  min-width: 360px;
-  background-color: ${(props) => props.theme.navBgColor};
-  height: 100%;
-  position: fixed;
-`;
+import Navbar from "../components/Navbar";
 
 const ContentContainer = styled.div`
   margin-left: 20%;
   width: 100%;
-  height: 260%;
+  height: 100%;
   min-width: 600px;
   background-color: #1a0f0f;
   display: flex;
@@ -101,7 +75,7 @@ const HeaderDiscriptionBox = styled.div`
   }
 `;
 
-const CoinBox = styled.a`
+const CoinBox = styled.div`
   display: flex;
   flex-direction: column;
   padding: 20px;
@@ -198,9 +172,48 @@ export interface Roi {
 
 function Coins() {
   function formatNumber(number: number) {
-    const formattedNumber = Number(number).toLocaleString(undefined, {
+    const formattedNumber = Math.abs(Number(number)).toLocaleString("en-US", {
       maximumFractionDigits: 2,
     });
+    return formattedNumber;
+  }
+
+  function plusmiunsformatNumber(number: number) {
+    const formattedNumber =
+      number > 0
+        ? "+ " +
+          Math.abs(Number(number)).toLocaleString("en-US", {
+            maximumFractionDigits: 2,
+          })
+        : "- " +
+          Math.abs(Number(number)).toLocaleString("en-US", {
+            maximumFractionDigits: 2,
+          });
+    return formattedNumber;
+  }
+
+  function dollarformatNumber(number: number) {
+    let formattedNumber =
+      number > 0
+        ? "+ " +
+          "$" +
+          Math.abs(Number(number)).toLocaleString("en-US", {
+            maximumFractionDigits: 2,
+          })
+        : "- " +
+          "$ " +
+          Math.abs(Number(number)).toLocaleString("en-US", {
+            maximumFractionDigits: 2,
+          });
+
+    if (
+      Number(number).toLocaleString("en-US", {
+        maximumFractionDigits: 2,
+      }) == "0"
+    ) {
+      formattedNumber = "$ 0";
+    }
+
     return formattedNumber;
   }
 
@@ -208,12 +221,7 @@ function Coins() {
 
   return (
     <>
-    <Container>
-      <Nav>
-        <Header>
-          <Title>Kestrel Coins</Title>
-        </Header>
-      </Nav>
+      <Navbar>{"Kestrel Coins"}</Navbar>
       <ContentContainer>
         <ContentHeader>
           <LogoImg src={"/coingecko.png"} />
@@ -234,44 +242,50 @@ function Coins() {
               <span>Loading...</span>
             ) : (
               data?.map((coin) => (
-                <CoinBox href="/${coin.id}">
-                  <div className="meta_data">
-                    <div className="coin_meta_data">
-                      <img className="logo_img" src={coin.image} />
-                      <span className="coin_name">{coin.id}</span>
+                <Link to={`${coin.id}`}>
+                  <CoinBox>
+                    <div className="meta_data">
+                      <div className="coin_meta_data">
+                        <img className="logo_img" src={coin.image} />
+                        <span className="coin_name">{coin.id}</span>
+                      </div>
+
+                      <div>
+                        <span className="current_price">
+                          $ {formatNumber(coin.current_price)}
+                        </span>
+                      </div>
                     </div>
 
-                    <div>
-                      <span className="current_price">
-                        $ {formatNumber(coin.current_price)}
+                    <div className="price_change_info">
+                      <span className="price_change">
+                        {dollarformatNumber(coin.price_change_24h)}
+                      </span>
+
+                      <span
+                        className="price_change_percent"
+                        style={{
+                          color:
+                            coin.price_change_percentage_24h >= 0
+                              ? "rgb(82, 180, 85)"
+                              : "rgb(220, 79, 69)",
+                        }}
+                      >
+                        {plusmiunsformatNumber(
+                          coin.price_change_percentage_24h
+                        )}{" "}
+                        %
                       </span>
                     </div>
-                  </div>
-
-                  <div className="price_change_info">
-                    <span className="price_change">
-                      $ {formatNumber(coin.price_change_24h)}
-                    </span>
-                    <span
-                      className="price_change_percent"
-                      style={{
-                        color:
-                          coin.price_change_percentage_24h >= 0
-                            ? "rgb(82, 180, 85)"
-                            : "rgb(220, 79, 69)",
-                      }}
-                    >
-                      {formatNumber(coin.price_change_percentage_24h)} %
-                    </span>
-                  </div>
-                </CoinBox>
+                  </CoinBox>
+                </Link>
               ))
             )}
           </div>
         </CoinList>
       </ContentContainer>
-    </Container>
-    <Outlet />
+
+      <Outlet />
     </>
   );
 }
